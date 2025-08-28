@@ -51,6 +51,8 @@ requirements:
 {% set tests_to_skip = tests_to_skip + " or test_empty_info" %}
 {% set tests_to_skip = tests_to_skip + " or test_fast_info" %}
 {% set tests_to_skip = tests_to_skip + " or test_shares_full" %}
+# [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\cygwin64\\tmp\\tmp1fd8rbpr\\tkr-tz.db'
+{% set tests_to_skip = tests_to_skip + " or test_storeTzNoRaise" %}  # [win]
 
 test:
   source_files:
