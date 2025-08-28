@@ -6,13 +6,14 @@ package:
   version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: b22b18f9734337b4ce26e9dec093698007266c6c18f9586939b53e115e4335d2
+  - url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+    sha256: 3d465e58c49be9d61f9862829de3e00bef6b623809f32f4efb5197b62fc60485
+  - url: https://github.com/ranaroussi/{{ name }}/archive/refs/tags/{{ version }}.tar.gz
+    sha256: f3ee457b2aeddd8476d3e130e1c17bb119091921b8e9621f34ecf8e2d9abecc6
+    folder: gh
 
 build:
   number: 0
-  entry_points:
-    - sample = sample:main
   script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
 
 requirements:
@@ -31,7 +32,7 @@ requirements:
     - frozendict >=2.3.4
     - peewee >=3.16.2
     - beautifulsoup4 >=4.11.1
-    - curl_cffi >=0.7
+    - curl-cffi >=0.7
     - protobuf >=3.19.0
     - websockets >=13.0
   run_constrained:
@@ -39,9 +40,21 @@ requirements:
     - requests_ratelimiter >=0.3.1
     - scipy >=1.6.3
 
+# No connection to database
+{% set tests_to_skip = "TestCacheNoPermission" %}
+{% set tests_to_skip = tests_to_skip + " or TestPriceRepairAssumptions" %}
+{% set tests_to_skip = tests_to_skip + " or TestPriceRepair" %}
+{% set tests_to_skip = tests_to_skip + " or TestPriceHistory" %}
+{% set tests_to_skip = tests_to_skip + " or TestTicker" %}
+{% set tests_to_skip = tests_to_skip + " or TestTickerHistory" %}
+{% set tests_to_skip = tests_to_skip + " or TestTickerEarnings" %}
+{% set tests_to_skip = tests_to_skip + " or test_empty_info" %}
+{% set tests_to_skip = tests_to_skip + " or test_fast_info" %}
+{% set tests_to_skip = tests_to_skip + " or test_shares_full" %}
+
 test:
   source_files:
-    - tests
+    - gh/tests
   imports:
     - yfinance
     - yfinance.const
@@ -56,7 +69,7 @@ test:
   commands:
     - pip check
     - python -c "from importlib.metadata import version; assert(version('{{ name }}')=='{{ version }}')"
-    - pytest -v tests
+    - pytest -v gh/tests -k "not({{ tests_to_skip }})"
   requires:
     - pip
     - pytest
